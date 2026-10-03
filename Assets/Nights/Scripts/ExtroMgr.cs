@@ -57,7 +57,7 @@ namespace HuddleNights {
 		}
 
 		void PlayAgain() {
-			SceneManager.LoadScene (0);
+			SceneManager.LoadScene ("Intro");
 		}
 
 		void ExitProgram() {

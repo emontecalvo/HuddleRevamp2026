@@ -11,3 +11,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Night1.unity
     guid: 6c9909418923c48ec998318fd3b348f6
+  - enabled: 1
+    path: Assets/Intro.unity
+    guid: 04229aee8fc9e4aa18a1dbd22ee1a2f3
+  m_configObjects: {}

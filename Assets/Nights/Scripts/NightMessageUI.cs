@@ -58,6 +58,14 @@ namespace HuddleNights {
 			HintHideTime = Time.time + seconds;
 		}
 
+		// Moves the hint area, as fractions of the screen (0,0 = bottom left).
+		public void SetHintAnchors (Vector2 anchorMin, Vector2 anchorMax) {
+			EnsureBuilt ();
+			RectTransform rt = (RectTransform) HintGroup.transform;
+			rt.anchorMin = anchorMin;
+			rt.anchorMax = anchorMax;
+		}
+
 		void Fade (CanvasGroup group, bool show) {
 			float target = show ? 1f : 0f;
 			group.alpha = Mathf.MoveTowards (group.alpha, target, FadeSpeed * Time.deltaTime);
