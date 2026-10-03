@@ -8,3 +8,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Huddle.unity
     guid: 7ba5be452e21d499998e600102662602
+  - enabled: 1
+    path: Assets/Night1.unity
+    guid: 6c9909418923c48ec998318fd3b348f6
