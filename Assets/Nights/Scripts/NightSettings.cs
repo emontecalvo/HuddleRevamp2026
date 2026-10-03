@@ -24,6 +24,8 @@ namespace HuddleNights {
 		public float TitleCardTime = 2.5f;
 		[Tooltip ("The final night ends with spring and the beach instead of moving to the next night")]
 		public bool IsFinalNight = false;
+		[Tooltip ("Show Night 1's tutorial hints (move, chop, feed the fire, stay warm)")]
+		public bool TutorialHints = false;
 
 		[Header ("Jellos")]
 		[Tooltip ("How many jellos are in this night (1-4). Jellos with a higher player slot are hidden.")]

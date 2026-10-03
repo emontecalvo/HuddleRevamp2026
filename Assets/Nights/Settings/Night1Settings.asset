@@ -17,6 +17,7 @@ MonoBehaviour:
   NightLength: 120
   TitleCardTime: 2.5
   IsFinalNight: 0
+  TutorialHints: 1
   JellosInPlay: 1
   StartingTemp: 10
   AloneCoolingRate: 0.2

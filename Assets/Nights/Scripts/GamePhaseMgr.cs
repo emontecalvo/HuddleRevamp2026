@@ -50,6 +50,10 @@ namespace HuddleNights {
 			}
 			Messages = gameObject.AddComponent<NightMessageUI> ();
 			Messages.MessageFont = MessageFont;
+
+			if (Settings.TutorialHints) {
+				gameObject.AddComponent<NightTutorial> ();
+			}
 		}
 
 		void Start () {

@@ -16,6 +16,7 @@ namespace HuddleNights {
 		public ParticleSystem WoodAddToFireParticle;
 
 		public float NumberOfWood;
+		public int WoodDelivered = 0;
 
 		public bool IsLit { get { return NumberOfWood > 0; } }
 
@@ -105,6 +106,7 @@ namespace HuddleNights {
 			WoodAddToFireParticle.Stop();
 			WoodAddToFireParticle.Play();
 			NumberOfWood += 1;
+			WoodDelivered += 1;
 		}
 	}
 }
