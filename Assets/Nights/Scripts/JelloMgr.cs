@@ -16,10 +16,40 @@ namespace HuddleNights {
 			}
 		}
 
+		static readonly string[] Names = { "Bobo", "Lulu", "Bartholomew", "Theodore" };
+
 		public List<Jello> AllJellos = new List<Jello> ();
+
+		public static string NameOf (int playerSlot) {
+			if (playerSlot < 0 || playerSlot >= Names.Length) {
+				return "Jello";
+			}
+			return Names [playerSlot];
+		}
 
 		public void Register (Jello jello) {
 			AllJellos.Add (jello);
+		}
+
+		void Update () {
+			if (GamePhaseMgr.inst.IsGame) {
+				TryJoinPlayer ();
+			}
+		}
+
+		// Pressing A on a free gamepad takes over the first found jello the AI is playing.
+		void TryJoinPlayer () {
+			Jello aiJello = null;
+			foreach (Jello jello in AllJellos) {
+				if (!jello.IsLost && !PlayerRoster.IsHuman (jello.PlayerSlot) &&
+					(aiJello == null || jello.PlayerSlot < aiJello.PlayerSlot)) {
+					aiJello = jello;
+				}
+			}
+
+			if (aiJello != null && PlayerRoster.TryJoin (aiJello.PlayerSlot)) {
+				NightMessageUI.inst.ShowHint ("Player " + (aiJello.PlayerSlot + 1) + " is now " + aiJello.JelloName + "!", 3f);
+			}
 		}
 
 		// A frozen jello thaws when it's near a burning fire or another jello,

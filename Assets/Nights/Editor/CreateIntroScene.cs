@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -66,7 +65,7 @@ namespace HuddleNights.EditorTools {
 			intro.CaptionFont = AssetDatabase.LoadAssetAtPath<Font> ("Assets/Letters for Learners.ttf");
 
 			EditorSceneManager.SaveScene (scene, ScenePath);
-			AddToBuildScenes (ScenePath);
+			BuildScenes.Add (ScenePath);
 			Debug.Log ("Created " + ScenePath + ". Press Play to watch the intro.");
 		}
 
@@ -76,17 +75,6 @@ namespace HuddleNights.EditorTools {
 				Debug.LogError ("Intro: couldn't find sprite " + Images + path);
 			}
 			return sprite;
-		}
-
-		static void AddToBuildScenes (string path) {
-			List<EditorBuildSettingsScene> scenes = new List<EditorBuildSettingsScene> (EditorBuildSettings.scenes);
-			foreach (EditorBuildSettingsScene existing in scenes) {
-				if (existing.path == path) {
-					return;
-				}
-			}
-			scenes.Add (new EditorBuildSettingsScene (path, true));
-			EditorBuildSettings.scenes = scenes.ToArray ();
 		}
 	}
 }

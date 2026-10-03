@@ -54,6 +54,9 @@ namespace HuddleNights {
 			if (Settings.TutorialHints) {
 				gameObject.AddComponent<NightTutorial> ();
 			}
+			if (Settings.LostJelloSlot >= 0) {
+				gameObject.AddComponent<LostJelloHints> ();
+			}
 		}
 
 		void Start () {

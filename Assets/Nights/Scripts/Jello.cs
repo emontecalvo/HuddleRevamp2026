@@ -18,6 +18,10 @@ namespace HuddleNights {
 		public bool IsNextToOther = false;
 		public bool AmIFrozen = false;
 		public bool AmIToasty = false;
+		[Tooltip ("Lost jellos start frozen, away from the others, until someone finds and thaws them")]
+		public bool IsLost = false;
+
+		public string JelloName { get { return JelloMgr.NameOf (PlayerSlot); } }
 
 		public SpriteRenderer FaceSprite;
 
@@ -64,6 +68,17 @@ namespace HuddleNights {
 			JelloAboveFlake.SetActive(false);
 			HulaSkirt.SetActive (false);
 			Sunglasses.SetActive (false);
+
+			if (PlayerSlot == settings.LostJelloSlot) {
+				IsLost = true;
+				AmIFrozen = true;
+				MyTemp = 0f;
+				SetFlakes (true);
+				// Their face panel appears once they're found.
+				if (CurrentUIFace != null) {
+					CurrentUIFace.gameObject.SetActive (false);
+				}
+			}
 		}
 
 		void Update ()
@@ -91,7 +106,12 @@ namespace HuddleNights {
 		}
 
 		void MovementLogic () {
-			Vector2 move = PlayerRoster.GetMove (PlayerSlot);
+			Vector2 move;
+			if (PlayerRoster.IsHuman (PlayerSlot)) {
+				move = PlayerRoster.GetMove (PlayerSlot);
+			} else {
+				move = JelloAI.GetMove (this);
+			}
 			Vector3 speed = new Vector3 (move.x, 0, move.y);
 			const float threshold = 0.5f;
 
@@ -177,14 +197,21 @@ namespace HuddleNights {
 
 			IsNextToOther = false;
 
+			// Only jellos that aren't frozen give off warmth.
 			foreach (Jello jello in JelloMgr.inst.AllJellos) {
-				if (jello != this) {
+				if (jello != this && !jello.AmIFrozen) {
 					Vector3 toJello = jello.transform.position - transform.position;
 					float distance = toJello.magnitude;
 					if (distance <= 2.25f) {
 						IsNextToOther = true;
 					}
 				}
+			}
+
+			if (AmIFrozen) {
+				ThawLogic (settings);
+				UpdateTempMask ();
+				return;
 			}
 
 			if (!IsNextToOther) {
@@ -264,6 +291,39 @@ namespace HuddleNights {
 				AmIToasty = false;
 			}
 
+			UpdateTempMask ();
+		}
+
+		// A frozen jello warms up while a friend huddles next to it (or it's by the fire),
+		// and thaws once it reaches ThawTemp. Left alone, it slowly loses that progress.
+		void ThawLogic (NightSettings settings) {
+			CurrentUIFace.SetJelloFrozenText (FrozenTxt);
+			SetFlakes (true);
+
+			if (IsNextToOther || IsNextToFire) {
+				MyTemp += settings.RescueWarmRate * Time.deltaTime;
+			} else {
+				MyTemp = Mathf.Max (0f, MyTemp - settings.AloneCoolingRate * Time.deltaTime);
+			}
+
+			if (MyTemp >= settings.ThawTemp) {
+				AmIFrozen = false;
+				SetFlakes (false);
+				if (IsLost) {
+					IsLost = false;
+					if (CurrentUIFace != null) {
+						CurrentUIFace.gameObject.SetActive (true);
+					}
+				}
+			}
+		}
+
+		void SetFlakes (bool frozen) {
+			JelloFaceFlake.SetActive (frozen);
+			JelloAboveFlake.SetActive (frozen);
+		}
+
+		void UpdateTempMask () {
 			float tempRatio = MyTemp / 11f;
 			float maskZPos = tempRatio * -2.4f;
 			SpriteMask.transform.localPosition = new Vector3 (0, 0, maskZPos);

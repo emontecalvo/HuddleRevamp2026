@@ -5,8 +5,8 @@ using UnityEngine.InputSystem.Controls;
 namespace HuddleNights {
 
 	// Remembers which input device controls which player slot, across scenes.
-	// Player 1 (slot 0) uses the keyboard (arrows or WASD) plus any gamepad nobody else has claimed.
-	// Players 2-4 claim a gamepad by pressing a button on it when their jello is found.
+	// Player 1 (slot 0) uses the keyboard (arrows or WASD) and keeps the first free gamepad they move with.
+	// Players 2-4 claim a free gamepad by pressing A on it once their jello has been found.
 	public static class PlayerRoster {
 
 		public const int MaxPlayers = 4;
@@ -37,16 +37,21 @@ namespace HuddleNights {
 					move += ReadKeys (keyboard.upArrowKey, keyboard.downArrowKey, keyboard.leftArrowKey, keyboard.rightArrowKey);
 					move += ReadKeys (keyboard.wKey, keyboard.sKey, keyboard.aKey, keyboard.dKey);
 				}
-				foreach (Gamepad gamepad in Gamepad.all) {
-					if (!IsClaimed (gamepad)) {
-						move += ReadGamepad (gamepad);
+				// Player 1 keeps the first free gamepad they move with, so pressing A
+				// on it can't hand it to another jello.
+				if (GetDevice (0) == null) {
+					foreach (Gamepad gamepad in Gamepad.all) {
+						if (!IsClaimed (gamepad) && ReadGamepad (gamepad).sqrMagnitude > 0.25f) {
+							devices [0] = gamepad;
+							break;
+						}
 					}
 				}
-			} else {
-				Gamepad gamepad = GetDevice (slot) as Gamepad;
-				if (gamepad != null) {
-					move += ReadGamepad (gamepad);
-				}
+			}
+
+			Gamepad mine = GetDevice (slot) as Gamepad;
+			if (mine != null) {
+				move += ReadGamepad (mine);
 			}
 
 			move.x = Mathf.Clamp (move.x, -1f, 1f);
@@ -64,6 +69,15 @@ namespace HuddleNights {
 			foreach (Gamepad gamepad in Gamepad.all) {
 				if (!IsClaimed (gamepad) && gamepad.buttonSouth.wasPressedThisFrame) {
 					devices [slot] = gamepad;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		public static bool HasFreeGamepad () {
+			foreach (Gamepad gamepad in Gamepad.all) {
+				if (!IsClaimed (gamepad)) {
 					return true;
 				}
 			}
@@ -97,7 +111,7 @@ namespace HuddleNights {
 		}
 
 		static bool IsClaimed (InputDevice device) {
-			for (int i = 1; i < MaxPlayers; i++) {
+			for (int i = 0; i < MaxPlayers; i++) {
 				if (GetDevice (i) == device) {
 					return true;
 				}

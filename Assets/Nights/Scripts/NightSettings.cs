@@ -31,7 +31,14 @@ namespace HuddleNights {
 		[Tooltip ("How many jellos are in this night (1-4). Jellos with a higher player slot are hidden.")]
 		[Range (1, 4)]
 		public int JellosInPlay = 4;
+		[Tooltip ("Player slot of the jello that starts lost and frozen, waiting to be found. -1 = nobody is lost.")]
+		[Range (-1, 3)]
+		public int LostJelloSlot = -1;
 		public float StartingTemp = 10f;
+		[Tooltip ("A frozen jello thaws once it warms up to this temperature")]
+		public float ThawTemp = 3f;
+		[Tooltip ("Degrees per second a frozen jello warms while someone huddles next to it (or it's by the fire)")]
+		public float RescueWarmRate = 1f;
 		[Tooltip ("Degrees per second lost when alone and away from the fire")]
 		public float AloneCoolingRate = 0.2f;
 		[Tooltip ("Degrees per second lost when alone and away from the fire during a storm")]
