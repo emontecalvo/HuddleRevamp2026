@@ -16,13 +16,13 @@ namespace HuddleNights {
 			}
 		}
 
-		public List<Tree> AllTrees = new List<Tree> ();
+		public List<PineTree> AllTrees = new List<PineTree> ();
 
-		public void Register (Tree tree) {
+		public void Register (PineTree tree) {
 			AllTrees.Add (tree);
 		}
 
-		public void Unregister (Tree tree) {
+		public void Unregister (PineTree tree) {
 			AllTrees.Remove (tree);
 		}
 	}

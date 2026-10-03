@@ -99,7 +99,7 @@ namespace HuddleNights {
 			}
 		}
 
-		public void ReceiveWood(Tree tree) {
+		public void ReceiveWood(PineTree tree) {
 			Destroy (tree.gameObject);
 
 			WoodAddToFireParticle.Clear ();

@@ -9,7 +9,7 @@ namespace HuddleNights {
 	{
 		[Tooltip ("0 = player 1 ... 3 = player 4")]
 		public int PlayerSlot = 0;
-		public Tree BeingHauled = null;
+		public PineTree BeingHauled = null;
 
 		public float MyTemp = 10.0f;
 		public float tempDelta = 0f;
@@ -144,7 +144,7 @@ namespace HuddleNights {
 				return;
 			}
 
-			foreach (Tree tree in TreeMgr.inst.AllTrees) {
+			foreach (PineTree tree in TreeMgr.inst.AllTrees) {
 				Vector3 toTree = tree.transform.position - transform.position;
 				float distance = toTree.magnitude;
 

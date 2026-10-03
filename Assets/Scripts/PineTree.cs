@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 
-public class Tree : MonoBehaviour {
+public class PineTree : MonoBehaviour {
 
 	bool AmIChopped = false;
 

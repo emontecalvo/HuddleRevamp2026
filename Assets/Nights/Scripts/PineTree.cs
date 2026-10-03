@@ -5,7 +5,7 @@ using DG.Tweening;
 
 namespace HuddleNights {
 
-	public class Tree : MonoBehaviour {
+	public class PineTree : MonoBehaviour {
 
 		bool AmIChopped = false;
 

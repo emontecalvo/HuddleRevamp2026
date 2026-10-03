@@ -9,7 +9,7 @@ public class Jello : MonoBehaviour
 	public KeyCode DownKey;
 	public KeyCode LeftKey;
 	public KeyCode RightKey;
-	public Tree BeingHauled = null;
+	public PineTree BeingHauled = null;
 
 	public float MyTemp = 10.0f;
 	public float tempDelta = 0f;
@@ -113,7 +113,7 @@ public class Jello : MonoBehaviour
 			return;
 		}
 
-		foreach (Tree tree in TreeMgr.inst.AllTrees) {
+		foreach (PineTree tree in TreeMgr.inst.AllTrees) {
 			Vector3 toTree = tree.transform.position - transform.position;
 			float distance = toTree.magnitude;
 
