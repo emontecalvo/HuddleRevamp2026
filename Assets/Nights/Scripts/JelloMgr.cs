@@ -37,7 +37,8 @@ namespace HuddleNights {
 			}
 		}
 
-		// Pressing A on a free gamepad takes over the first found jello the AI is playing.
+		// Pressing A on a free gamepad (or Enter, for the arrow keys) takes over the first
+		// found jello the AI is playing.
 		void TryJoinPlayer () {
 			Jello aiJello = null;
 			foreach (Jello jello in AllJellos) {
@@ -48,7 +49,11 @@ namespace HuddleNights {
 			}
 
 			if (aiJello != null && PlayerRoster.TryJoin (aiJello.PlayerSlot)) {
-				NightMessageUI.inst.ShowHint ("Player " + (aiJello.PlayerSlot + 1) + " is now " + aiJello.JelloName + "!", 3f);
+				string joined = "Player " + (aiJello.PlayerSlot + 1) + " is now " + aiJello.JelloName + "!";
+				if (PlayerRoster.UsesArrowKeys (aiJello.PlayerSlot)) {
+					joined = "Player " + (aiJello.PlayerSlot + 1) + " is now " + aiJello.JelloName + " on the arrow keys. Bobo now uses WASD!";
+				}
+				NightMessageUI.inst.ShowHint (joined, 4f);
 			}
 		}
 

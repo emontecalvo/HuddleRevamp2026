@@ -53,8 +53,8 @@ namespace HuddleNights {
 
 			if (!SaidJoin && Time.time > FoundTime + JoinHintDelay) {
 				SaidJoin = true;
-				if (!PlayerRoster.IsHuman (Lost.PlayerSlot) && PlayerRoster.HasFreeGamepad ()) {
-					NightMessageUI.inst.ShowHint ("Player " + (Lost.PlayerSlot + 1) + ": press A on a gamepad to play as " + name, 6f);
+				if (!PlayerRoster.IsHuman (Lost.PlayerSlot) && (PlayerRoster.HasFreeGamepad () || PlayerRoster.IsKeyboardFree ())) {
+					NightMessageUI.inst.ShowHint ("Player " + (Lost.PlayerSlot + 1) + ": press A on a gamepad, or Enter to use the arrow keys, to play as " + name, 6f);
 				}
 			}
 		}

@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Night2.unity
     guid: 47eb4601bb86b46a483f066b7aa27ad9
+  - enabled: 1
+    path: Assets/Night3.unity
+    guid: 8c3fdfd4faec74479854af9d996728c4
   m_configObjects: {}

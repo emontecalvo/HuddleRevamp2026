@@ -5,23 +5,29 @@ using UnityEngine.InputSystem.Controls;
 namespace HuddleNights {
 
 	// Remembers which input device controls which player slot, across scenes.
-	// Player 1 (slot 0) uses the keyboard (arrows or WASD) and keeps the first free gamepad they move with.
+	// Player 1 (slot 0) uses the keyboard (WASD, plus the arrows unless someone else has them)
+	// and keeps the first free gamepad they move with.
 	// Players 2-4 claim a free gamepad by pressing A on it once their jello has been found.
+	// One extra player can share the keyboard instead: pressing Enter gives them the arrow keys,
+	// and player 1 moves to WASD.
 	public static class PlayerRoster {
 
 		public const int MaxPlayers = 4;
 
 		static readonly InputDevice[] devices = new InputDevice[MaxPlayers];
+		// The slot playing with the arrow keys on a shared keyboard, or -1.
+		static int ArrowKeysSlot = -1;
 
 		[RuntimeInitializeOnLoadMethod (RuntimeInitializeLoadType.SubsystemRegistration)]
 		static void ResetRoster () {
 			for (int i = 0; i < MaxPlayers; i++) {
 				devices [i] = null;
 			}
+			ArrowKeysSlot = -1;
 		}
 
 		public static bool IsHuman (int slot) {
-			return slot == 0 || GetDevice (slot) != null;
+			return slot == 0 || GetDevice (slot) != null || slot == ArrowKeysSlot;
 		}
 
 		public static Vector2 GetMove (int slot) {
@@ -31,12 +37,17 @@ namespace HuddleNights {
 
 			Vector2 move = Vector2.zero;
 
-			if (slot == 0) {
-				Keyboard keyboard = Keyboard.current;
-				if (keyboard != null) {
-					move += ReadKeys (keyboard.upArrowKey, keyboard.downArrowKey, keyboard.leftArrowKey, keyboard.rightArrowKey);
+			Keyboard keyboard = Keyboard.current;
+			if (keyboard != null) {
+				if (slot == 0) {
 					move += ReadKeys (keyboard.wKey, keyboard.sKey, keyboard.aKey, keyboard.dKey);
 				}
+				if (slot == ArrowKeysSlot || (slot == 0 && ArrowKeysSlot < 0)) {
+					move += ReadKeys (keyboard.upArrowKey, keyboard.downArrowKey, keyboard.leftArrowKey, keyboard.rightArrowKey);
+				}
+			}
+
+			if (slot == 0) {
 				// Player 1 keeps the first free gamepad they move with, so pressing A
 				// on it can't hand it to another jello.
 				if (GetDevice (0) == null) {
@@ -59,11 +70,18 @@ namespace HuddleNights {
 			return move;
 		}
 
-		// Gives the slot to the first unclaimed gamepad with a button pressed this frame.
-		// Call every frame while waiting for someone to join.
+		// Gives the slot to the first unclaimed gamepad with A pressed this frame, or to the
+		// arrow keys if Enter was pressed. Call every frame while waiting for someone to join.
 		public static bool TryJoin (int slot) {
-			if (slot <= 0 || slot >= MaxPlayers || GetDevice (slot) != null) {
+			if (slot <= 0 || slot >= MaxPlayers || IsHuman (slot)) {
 				return false;
+			}
+
+			Keyboard keyboard = Keyboard.current;
+			if (ArrowKeysSlot < 0 && keyboard != null &&
+				(keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame)) {
+				ArrowKeysSlot = slot;
+				return true;
 			}
 
 			foreach (Gamepad gamepad in Gamepad.all) {
@@ -73,6 +91,14 @@ namespace HuddleNights {
 				}
 			}
 			return false;
+		}
+
+		public static bool UsesArrowKeys (int slot) {
+			return slot == ArrowKeysSlot;
+		}
+
+		public static bool IsKeyboardFree () {
+			return ArrowKeysSlot < 0;
 		}
 
 		public static bool HasFreeGamepad () {

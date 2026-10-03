@@ -21,6 +21,8 @@ namespace HuddleNights {
 		public GameObject StormPanel1;
 		public GameObject StormPanel2;
 
+		bool SaidFirstWarning = false;
+
 		void Start () {
 			StormPanel1.SetActive (false);
 			StormPanel2.SetActive (false);
@@ -33,6 +35,11 @@ namespace HuddleNights {
 			if (GamePhaseMgr.inst.IsGame && warningTime > 0) {
 				float untilStorm = Thermometer.inst.TimeUntilNextStorm ();
 				warn = untilStorm > 0 && untilStorm <= warningTime;
+			}
+
+			if (warn && !SaidFirstWarning) {
+				SaidFirstWarning = true;
+				NightMessageUI.inst.ShowHint ("A storm is coming! Huddle together by the fire!", warningTime);
 			}
 
 			StormPanel1.SetActive (warn);
