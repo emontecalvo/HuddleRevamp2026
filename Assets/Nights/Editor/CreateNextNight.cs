@@ -8,8 +8,8 @@ namespace HuddleNights.EditorTools {
 
 	// Huddle > Create Next Night: copies the highest-numbered NightN scene and its settings
 	// into Night(N+1), points the new scene at the new settings, and adds it to the build
-	// profile's scene list. Applies the game outline (more jellos found, storms from Night 3)
-	// and arranges the jellos: found ones next to Bobo, the lost one far away.
+	// profile's scene list. Applies the game outline (more jellos found, storms from Night 3,
+	// big logs on Night 4) and arranges the jellos: found ones next to Bobo, the lost one far away.
 	public static class CreateNextNight {
 
 		const string SettingsFolder = "Assets/Nights/Settings/";
@@ -20,6 +20,14 @@ namespace HuddleNights.EditorTools {
 			new Vector2 (0.15f, 0.5f), new Vector2 (0.85f, 0.5f),
 			new Vector2 (0.5f, 0.15f),
 		};
+		// Candidate spots for Night 4's big logs, as fractions of the camera view.
+		static readonly Vector2[] BigLogViewSpots = {
+			new Vector2 (0.3f, 0.25f), new Vector2 (0.7f, 0.25f), new Vector2 (0.35f, 0.55f),
+			new Vector2 (0.65f, 0.55f), new Vector2 (0.5f, 0.35f), new Vector2 (0.2f, 0.4f),
+		};
+		const int BigLogCount = 3;
+		const float BigLogClearance = 2.5f;
+		const string WoodSprite = "Assets/Images/fire-tree-wood/wood.png";
 		// Where already-found jellos start, relative to Bobo.
 		static readonly Vector3[] FoundJelloOffsets = {
 			new Vector3 (1.8f, 0f, 0f), new Vector3 (-1.8f, 0f, 0f), new Vector3 (0f, 0f, -1.8f),
@@ -62,6 +70,7 @@ namespace HuddleNights.EditorTools {
 				EditorUtility.SetDirty (phase);
 			}
 			ArrangeJellos (scene, settings);
+			AddOutlineObjects (scene, settings);
 			EditorSceneManager.SaveScene (scene);
 
 			BuildScenes.Add (ScenePath (next));
@@ -123,12 +132,7 @@ namespace HuddleNights.EditorTools {
 				taken.Add (fire.transform.position);
 			}
 
-			Camera cam = null;
-			foreach (Camera c in FindAll<Camera> (scene)) {
-				if (c.CompareTag ("MainCamera")) {
-					cam = c;
-				}
-			}
+			Camera cam = MainCamera (scene);
 			if (lost == null || cam == null) {
 				return;
 			}
@@ -152,6 +156,77 @@ namespace HuddleNights.EditorTools {
 				}
 			}
 			MoveJello (lost, bestSpot);
+		}
+
+		// Night 4: big logs that take two jellos to move, away from the fire and the jellos.
+		static void AddOutlineObjects (Scene scene, NightSettings settings) {
+			if (settings.NightNumber != 4) {
+				return;
+			}
+			Camera cam = MainCamera (scene);
+			Sprite wood = AssetDatabase.LoadAssetAtPath<Sprite> (WoodSprite);
+			if (cam == null || wood == null) {
+				Debug.LogWarning ("Night 4: couldn't place big logs (no main camera or wood sprite).");
+				return;
+			}
+
+			System.Collections.Generic.List<Vector3> taken = new System.Collections.Generic.List<Vector3> ();
+			foreach (Jello jello in FindAll<Jello> (scene)) {
+				if (jello.PlayerSlot < settings.JellosInPlay) {
+					taken.Add (jello.transform.position);
+				}
+			}
+			foreach (Fire fire in FindAll<Fire> (scene)) {
+				taken.Add (fire.transform.position);
+			}
+
+			GameObject group = new GameObject ("BigLogs");
+			Plane ground = new Plane (Vector3.up, Vector3.zero);
+			int placed = 0;
+			foreach (Vector2 viewSpot in BigLogViewSpots) {
+				Ray ray = cam.ViewportPointToRay (new Vector3 (viewSpot.x, viewSpot.y, 0));
+				if (placed >= BigLogCount || !ground.Raycast (ray, out float hit)) {
+					continue;
+				}
+				Vector3 spot = ray.GetPoint (hit);
+				bool tooClose = false;
+				foreach (Vector3 other in taken) {
+					tooClose |= BigLog.FlatDistance (spot, other) < BigLogClearance;
+				}
+				if (tooClose) {
+					continue;
+				}
+				MakeBigLog (group.transform, spot, wood);
+				taken.Add (spot);
+				placed++;
+			}
+		}
+
+		// A placeholder big log: the wood pile sprite, doubled in size and tinted brown,
+		// lying flat like the rest of the wood.
+		static void MakeBigLog (Transform parent, Vector3 position, Sprite wood) {
+			GameObject log = new GameObject ("BigLog");
+			log.transform.SetParent (parent, false);
+			log.transform.position = position;
+			log.AddComponent<BigLog> ();
+
+			GameObject view = new GameObject ("LogView");
+			view.transform.SetParent (log.transform, false);
+			view.transform.localRotation = Quaternion.Euler (90f, 0f, 0f);
+			view.transform.localScale = Vector3.one * 2f;
+			SpriteRenderer renderer = view.AddComponent<SpriteRenderer> ();
+			renderer.sprite = wood;
+			renderer.color = new Color (0.85f, 0.6f, 0.4f);
+			view.AddComponent<global::AutoLayerSort> ();
+		}
+
+		static Camera MainCamera (Scene scene) {
+			foreach (Camera cam in FindAll<Camera> (scene)) {
+				if (cam.CompareTag ("MainCamera")) {
+					return cam;
+				}
+			}
+			return null;
 		}
 
 		static void MoveJello (Jello jello, Vector3 position) {

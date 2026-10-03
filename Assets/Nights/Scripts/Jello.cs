@@ -10,6 +10,7 @@ namespace HuddleNights {
 		[Tooltip ("0 = player 1 ... 3 = player 4")]
 		public int PlayerSlot = 0;
 		public PineTree BeingHauled = null;
+		public BigLog CarryingLog = null;
 
 		public float MyTemp = 10.0f;
 		public float tempDelta = 0f;
@@ -140,7 +141,7 @@ namespace HuddleNights {
 		}
 
 		void ChopTrees() {
-			if (BeingHauled != null) {
+			if (BeingHauled != null || CarryingLog != null) {
 				return;
 			}
 

@@ -5,12 +5,16 @@ namespace HuddleNights {
 	// Steers jellos that no human is playing. In order of priority:
 	// 1. A storm is here or coming: go to its own spot by the fire (if it's lit).
 	// 2. A teammate froze: go huddle next to them to thaw them out.
-	// 3. Otherwise: follow the nearest player around.
+	// 3. Carrying a big log: stay with the player steering it (or take it to the fire).
+	// 4. A player is stuck holding a big log alone: go help.
+	// 5. Otherwise: follow the nearest player around.
 	// Throughout, it steps aside from other jellos so they never stack up.
 	public static class JelloAI {
 
 		const float FollowDistance = 1.5f;
 		const float RescueDistance = 1f;
+		const float LogGrabDistance = 1f;
+		const float LogCarryDistance = 1.2f;
 		// Each AI jello has its own spot in a ring in front of the fire, close enough
 		// to be by the fire (< 3) and to huddle with its neighbours (< 2.25).
 		const float FireSpotRadius = 1.4f;
@@ -37,6 +41,21 @@ namespace HuddleNights {
 				return MoveToward (self, frozen.transform.position, RescueDistance);
 			}
 
+			BigLog log = self.CarryingLog;
+			if (log != null && log.IsMoving) {
+				// Let a player steer; with no player on the log, take it to the fire.
+				Jello steerer = HumanCarrier (log);
+				if (steerer != null) {
+					return MoveToward (self, steerer.transform.position, LogCarryDistance);
+				}
+				return MoveToward (self, Fire.inst.transform.position, FireSpotRadius);
+			}
+
+			BigLog needsHelp = LogNeedingHelp (self);
+			if (needsHelp != null) {
+				return MoveToward (self, needsHelp.transform.position, LogGrabDistance);
+			}
+
 			Jello leader = NearestPlayer (self);
 			if (leader != null) {
 				return MoveToward (self, leader.transform.position, FollowDistance);
@@ -50,6 +69,36 @@ namespace HuddleNights {
 			}
 			float untilStorm = Thermometer.inst.TimeUntilNextStorm ();
 			return untilStorm > 0 && untilStorm <= GamePhaseMgr.inst.Settings.StormWarningTime;
+		}
+
+		// A big log a player is holding but can't move alone (or that this jello is already
+		// holding, waiting for more help).
+		static BigLog LogNeedingHelp (Jello self) {
+			if (self.CarryingLog != null) {
+				return self.CarryingLog.HasHumanCarrier () ? self.CarryingLog : null;
+			}
+			BigLog nearest = null;
+			float nearestDistance = float.MaxValue;
+			foreach (BigLog log in BigLog.All) {
+				if (log.IsMoving || !log.HasHumanCarrier ()) {
+					continue;
+				}
+				float distance = BigLog.FlatDistance (log.transform.position, self.transform.position);
+				if (distance < nearestDistance) {
+					nearest = log;
+					nearestDistance = distance;
+				}
+			}
+			return nearest;
+		}
+
+		static Jello HumanCarrier (BigLog log) {
+			foreach (Jello carrier in log.Carriers) {
+				if (PlayerRoster.IsHuman (carrier.PlayerSlot)) {
+					return carrier;
+				}
+			}
+			return null;
 		}
 
 		// Spots fan out across the front of the fire (210°, 270°, 330°), so nobody hides behind it.

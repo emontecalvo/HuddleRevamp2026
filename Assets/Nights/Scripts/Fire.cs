@@ -17,6 +17,7 @@ namespace HuddleNights {
 
 		public float NumberOfWood;
 		public int WoodDelivered = 0;
+		public int BigLogsDelivered = 0;
 
 		public bool IsLit { get { return NumberOfWood > 0; } }
 
@@ -107,6 +108,17 @@ namespace HuddleNights {
 			WoodAddToFireParticle.Play();
 			NumberOfWood += 1;
 			WoodDelivered += 1;
+		}
+
+		public void ReceiveBigLog(BigLog log) {
+			NumberOfWood += log.WoodValue;
+			WoodDelivered += 1;
+			BigLogsDelivered += 1;
+			Destroy (log.gameObject);
+
+			WoodAddToFireParticle.Clear ();
+			WoodAddToFireParticle.Stop();
+			WoodAddToFireParticle.Play();
 		}
 	}
 }

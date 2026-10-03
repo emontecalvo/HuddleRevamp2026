@@ -57,6 +57,9 @@ namespace HuddleNights {
 			if (Settings.LostJelloSlot >= 0) {
 				gameObject.AddComponent<LostJelloHints> ();
 			}
+			if (FindAnyObjectByType<BigLog> () != null) {
+				gameObject.AddComponent<BigLogHints> ();
+			}
 		}
 
 		void Start () {
